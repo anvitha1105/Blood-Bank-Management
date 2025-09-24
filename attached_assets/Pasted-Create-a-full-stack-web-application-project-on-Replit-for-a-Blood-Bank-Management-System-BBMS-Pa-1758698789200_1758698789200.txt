@@ -1,0 +1,83 @@
+Create a full-stack web application project on Replit for a Blood Bank Management System (BBMS).
+
+Part 1: Backend with Flask & PostgreSQL
+
+Frameworks & Libraries: Use Python with Flask and Flask-RESTful for the API. Use SQLAlchemy to connect to a PostgreSQL database.
+
+File Structure: Organize the project with a clear separation of concerns.
+
+backend/: All Python backend files, including app.py, database.py, and API resources.
+
+frontend/: All frontend files, including index.html, styles.css, and scripts.js.
+
+README.md: A comprehensive guide for setup, deployment, and usage.
+
+Database Models: Create the following tables in the PostgreSQL database using SQLAlchemy models.
+
+Donor: ID, Name, Age, Gender, Blood Group, Contact, Location, Last Donation Date
+
+Patient: ID, Name, Age, Blood Group, Contact, Location, Units Needed
+
+BloodInventory: ID, Blood Group, Units Available, Expiry Date
+
+DonationRecord: ID, Donor ID, Date of Donation, Units Donated
+
+Request: ID, Patient ID, Blood Group, Units Requested, Date, Status
+
+RESTful API Endpoints: Implement the following CRUD operations using Flask-RESTful. All responses should be in JSON format.
+
+Donors: GET /api/donors, POST /api/donors, PUT /api/donors/<int:id>, DELETE /api/donors/<int:id>
+
+Inventory: GET /api/inventory, POST /api/inventory, PUT /api/inventory/<int:id>, DELETE /api/inventory/<int:id>
+
+Requests: GET /api/requests, POST /api/requests, PUT /api/requests/<int:id>, DELETE /api/requests/<int:id>
+
+Analytics: A GET endpoint for dashboard data, e.g., /api/dashboard-stats that returns summary cards and chart data.
+
+Preload Data: Write a Python function to automatically populate the database with the provided sample dataset. This function must run only once when the application is first initialized.
+
+CORS: Ensure CORS is enabled on the backend to allow the frontend to make API requests.
+
+Part 2: Frontend with a Modern, "Out-of-the-Box" UI
+
+Single-Page Application: Create a single-page application in frontend/index.html.
+
+Visually Stunning Design: Use a CSS framework like Tailwind CSS to build a visually impressive and highly polished interface. The design should be "out-of-the-box" with vibrant colors, subtle gradients, smooth shadows, and clean, modern typography. The layout must be fully responsive, adapting gracefully to all screen sizes.
+
+Interactive Dashboard:
+
+Fetch data from the backend to display key metrics in colorful, animated cards.
+
+Use a JavaScript charting library like Chart.js to create visually spectacular bar charts, line charts, and pie charts. The charts should not only display data but also tell a story, with custom colors, hover-over tooltips, and smooth animations.
+
+Implement low-stock alerts and expiry alerts that change the appearance of dashboard elements to grab the user's attention.
+
+Management Sections: Create separate sections for managing donors, inventory, and requests.
+
+Each section should display data in a responsive table.
+
+Crucially, implement easy-to-use forms and buttons to allow users to add new records for donors, blood units, and patient requests directly from the UI.
+
+Implement CRUD functionality for adding, updating, and deleting records by making API calls to the backend.
+
+Include a search and filter input for each table to allow users to quickly find data.
+
+Extra Features:
+
+Add a button to export data tables to a CSV file.
+
+Ensure all code is well-commented for clarity.
+
+The entire application should be a fully functional demo without any login or signup pages to prevent errors and ensure it works perfectly out-of-the-box.
+
+Part 3: Project Documentation & Zero-Error Deployment
+
+README.md: Create a detailed README.md file in the root directory.
+
+Provide a clear title and a brief project description.
+
+Include a Zero-Error Setup Guide with step-by-step instructions on installing dependencies (pip install ...), configuring the database, and running the application. The guide must be written to prevent any common errors.
+
+Provide an API Documentation section listing the available endpoints and their purpose.
+
+Include a How to Use section explaining the different features of the frontend.
