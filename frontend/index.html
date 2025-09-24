@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .metric-card.green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .metric-card.purple {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .metric-card.orange {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+        
+        .metric-card.teal {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .alert-low-stock {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        .alert-expiry {
+            background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-400 to-purple-600">
+    <!-- Navigation -->
+    <nav class="glass-card m-4 p-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-tint text-red-500 text-2xl"></i>
+                <h1 class="text-2xl font-bold text-white">BloodBank Pro</h1>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="showSection('dashboard')" class="nav-btn btn-primary text-white px-4 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </button>
+                <button onclick="showSection('donors')" class="nav-btn text-white px-4 py-2 rounded-lg font-medium transition-all hover:bg-white hover:bg-opacity-20">
+                    <i class="fas fa-users mr-2"></i>Donors
+                </button>
+                <button onclick="showSection('inventory')" class="nav-btn text-white px-4 py-2 rounded-lg font-medium transition-all hover:bg-white hover:bg-opacity-20">
+                    <i class="fas fa-warehouse mr-2"></i>Inventory
+                </button>
+                <button onclick="showSection('patients')" class="nav-btn text-white px-4 py-2 rounded-lg font-medium transition-all hover:bg-white hover:bg-opacity-20">
+                    <i class="fas fa-user-injured mr-2"></i>Patients
+                </button>
+                <button onclick="showSection('requests')" class="nav-btn text-white px-4 py-2 rounded-lg font-medium transition-all hover:bg-white hover:bg-opacity-20">
+                    <i class="fas fa-hand-holding-medical mr-2"></i>Requests
+                </button>
+                <button onclick="showSection('donations')" class="nav-btn text-white px-4 py-2 rounded-lg font-medium transition-all hover:bg-white hover:bg-opacity-20">
+                    <i class="fas fa-heart mr-2"></i>Donations
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pb-8">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section">
+            <!-- Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+                <div class="metric-card text-white p-6 rounded-xl shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white text-opacity-80 text-sm font-medium">Total Donors</p>
+                            <p id="total-donors" class="text-3xl font-bold">-</p>
+                        </div>
+                        <i class="fas fa-users text-3xl opacity-80"></i>
+                    </div>
+                </div>
+                
+                <div class="metric-card blue text-white p-6 rounded-xl shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white text-opacity-80 text-sm font-medium">Total Patients</p>
+                            <p id="total-patients" class="text-3xl font-bold">-</p>
+                        </div>
+                        <i class="fas fa-user-injured text-3xl opacity-80"></i>
+                    </div>
+                </div>
+                
+                <div class="metric-card green text-white p-6 rounded-xl shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white text-opacity-80 text-sm font-medium">Blood Units</p>
+                            <p id="total-blood-units" class="text-3xl font-bold">-</p>
+                        </div>
+                        <i class="fas fa-tint text-3xl opacity-80"></i>
+                    </div>
+                </div>
+                
+                <div class="metric-card purple text-white p-6 rounded-xl shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white text-opacity-80 text-sm font-medium">Pending Requests</p>
+                            <p id="pending-requests" class="text-3xl font-bold">-</p>
+                        </div>
+                        <i class="fas fa-clock text-3xl opacity-80"></i>
+                    </div>
+                </div>
+                
+                <div class="metric-card orange text-white p-6 rounded-xl shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white text-opacity-80 text-sm font-medium">Critical Requests</p>
+                            <p id="critical-requests" class="text-3xl font-bold">-</p>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-3xl opacity-80"></i>
+                    </div>
+                </div>
+                
+                <div class="metric-card teal text-white p-6 rounded-xl shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-white text-opacity-80 text-sm font-medium">Recent Donations</p>
+                            <p id="recent-donations" class="text-3xl font-bold">-</p>
+                        </div>
+                        <i class="fas fa-heart text-3xl opacity-80"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Blood Group Distribution</h3>
+                    <canvas id="bloodGroupChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Monthly Donations</h3>
+                    <canvas id="donationsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Alerts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>Low Stock Alerts
+                    </h3>
+                    <div id="low-stock-alerts" class="space-y-3">
+                        <!-- Low stock alerts will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">
+                        <i class="fas fa-calendar-times text-yellow-400 mr-2"></i>Expiry Alerts
+                    </h3>
+                    <div id="expiry-alerts" class="space-y-3">
+                        <!-- Expiry alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donors Section -->
+        <div id="donors-section" class="section section-hidden">
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Donor Management</h2>
+                    <button onclick="showAddDonorForm()" class="btn-primary text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>Add New Donor
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="donor-search" placeholder="Search donors..." 
+                           class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="donor-blood-filter" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    <button onclick="exportToCSV('donors')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export CSV
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="bg-white bg-opacity-20">
+                                <th class="px-4 py-3 text-left">Name</th>
+                                <th class="px-4 py-3 text-left">Age</th>
+                                <th class="px-4 py-3 text-left">Blood Group</th>
+                                <th class="px-4 py-3 text-left">Contact</th>
+                                <th class="px-4 py-3 text-left">Location</th>
+                                <th class="px-4 py-3 text-left">Last Donation</th>
+                                <th class="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donors-table-body">
+                            <!-- Donor data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory-section" class="section section-hidden">
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Blood Inventory</h2>
+                    <button onclick="showAddInventoryForm()" class="btn-primary text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>Add Blood Units
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="inventory-search" placeholder="Search inventory..." 
+                           class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="inventory-blood-filter" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    <button onclick="exportToCSV('inventory')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export CSV
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="bg-white bg-opacity-20">
+                                <th class="px-4 py-3 text-left">Blood Group</th>
+                                <th class="px-4 py-3 text-left">Units Available</th>
+                                <th class="px-4 py-3 text-left">Expiry Date</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body">
+                            <!-- Inventory data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Section -->
+        <div id="patients-section" class="section section-hidden">
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Patient Management</h2>
+                    <button onclick="showAddPatientForm()" class="btn-primary text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>Add New Patient
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="patient-search" placeholder="Search patients..." 
+                           class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="patient-blood-filter" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    <button onclick="exportToCSV('patients')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export CSV
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="bg-white bg-opacity-20">
+                                <th class="px-4 py-3 text-left">Name</th>
+                                <th class="px-4 py-3 text-left">Age</th>
+                                <th class="px-4 py-3 text-left">Blood Group</th>
+                                <th class="px-4 py-3 text-left">Contact</th>
+                                <th class="px-4 py-3 text-left">Location</th>
+                                <th class="px-4 py-3 text-left">Units Needed</th>
+                                <th class="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patients-table-body">
+                            <!-- Patient data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Section -->
+        <div id="requests-section" class="section section-hidden">
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Blood Requests</h2>
+                    <button onclick="showAddRequestForm()" class="btn-primary text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>New Request
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="request-search" placeholder="Search requests..." 
+                           class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="request-status-filter" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Fulfilled">Fulfilled</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <button onclick="exportToCSV('requests')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export CSV
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="bg-white bg-opacity-20">
+                                <th class="px-4 py-3 text-left">Patient Name</th>
+                                <th class="px-4 py-3 text-left">Blood Group</th>
+                                <th class="px-4 py-3 text-left">Units Requested</th>
+                                <th class="px-4 py-3 text-left">Date</th>
+                                <th class="px-4 py-3 text-left">Priority</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-table-body">
+                            <!-- Request data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donations Section -->
+        <div id="donations-section" class="section section-hidden">
+            <div class="glass-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Donation Records</h2>
+                    <button onclick="showAddDonationForm()" class="btn-primary text-white px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>Record Donation
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="donation-search" placeholder="Search donations..." 
+                           class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="donation-blood-filter" class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                    <button onclick="exportToCSV('donations')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export CSV
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="bg-white bg-opacity-20">
+                                <th class="px-4 py-3 text-left">Donor Name</th>
+                                <th class="px-4 py-3 text-left">Blood Group</th>
+                                <th class="px-4 py-3 text-left">Units Donated</th>
+                                <th class="px-4 py-3 text-left">Donation Date</th>
+                                <th class="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donations-table-body">
+                            <!-- Donation data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Forms -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card p-6 w-full max-w-md max-h-96 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-xl font-bold text-white"></h3>
+                <button onclick="closeModal()" class="text-white hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="modal-content">
+                <!-- Form content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
